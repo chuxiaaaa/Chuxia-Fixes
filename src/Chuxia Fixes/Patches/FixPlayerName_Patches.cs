@@ -49,7 +49,7 @@ namespace Patches
                     {
                         if (StartOfRound.Instance.mapScreenPlayerName.text != instance.targetedPlayer.playerUsername)
                         {
-                            Plugin.Log.LogInfo($"ManualCameraRenderer.updateMapTarget -> {instance.targetedPlayer.playerUsername}|{instance.targetedPlayer.playerSteamId}");
+                            Plugin.Log.LogInfo($"[FixPlayerName] ManualCameraRenderer.updateMapTarget -> {instance.targetedPlayer.playerUsername}|{instance.targetedPlayer.playerSteamId}");
                             StartOfRound.Instance.mapScreenPlayerName.text = instance.targetedPlayer.playerUsername;
                         }
                     }
@@ -96,19 +96,7 @@ namespace Patches
             GameNetworkManager.Instance.StartCoroutine(RefreshPlayerNames());
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(StartOfRound), "SetShipReadyToLand")]
-        private static void ResetHUDManager()
-        {
-            if (!Plugin.FixDeathBoxes.Value)
-            {
-                return;
-            }
-            var hudManager = HUDManager.Instance;
-            if (hudManager == null) return;
-            hudManager.spectatingPlayerBoxes = new Dictionary<Animator, PlayerControllerB>();
-            hudManager.boxesAdded = 0;
-        }
+ 
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PlayerControllerB), "ConnectClientToPlayerObject")]

@@ -32,7 +32,7 @@ namespace ChuxiaFixes.Patches
                 return;
             }
             hasPatch = true;
-            var harmony = new Harmony("chuxia.NetworkMetricsFix");
+            var harmony = new Harmony($"{LCMPluginInfo.PLUGIN_GUID}.NetworkAnalyzer_Patches");
             foreach (var item in AccessTools.GetDeclaredMethods(__instance.GetType()))
             {
                 if (item.ReturnType == typeof(void))
