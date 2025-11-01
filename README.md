@@ -46,5 +46,6 @@
 
 ## Support
 
-* Discuss or report issues in the [LC Modding Discord Server](https://discord.com/invite/lcmod)
-* QQ group: **263868521**
+* The [thread](https://discord.com/channels/1168655651455639582/1396719856161915011) in the [LC Modding Discord Server](https://discord.gg/XeyYqRdRGC)
+
+* QQ group: **1060993887**

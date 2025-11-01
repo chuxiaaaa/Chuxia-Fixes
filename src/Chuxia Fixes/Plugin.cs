@@ -10,6 +10,8 @@ using Patches;
 
 using TMPro;
 
+using static Patches.General_Patches;
+
 
 [BepInPlugin(LCMPluginInfo.PLUGIN_GUID, LCMPluginInfo.PLUGIN_NAME, LCMPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin

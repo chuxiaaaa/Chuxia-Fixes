@@ -1,5 +1,9 @@
-# LCMPublishingTemplate Changelog
+## 1.0.1
 
-## Describe your changes for each release here
+- Now encountering fonts that cannot be displayed, there should be better performance.
 
-The contents of this file will display in the Changelog tab on the Thunderstore
+- Improved the logs of FixPlayerName
+
+## 1.0.0
+
+- Release
