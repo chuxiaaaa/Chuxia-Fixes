@@ -100,7 +100,7 @@ namespace Patches
         [HarmonyPatch(typeof(SceneEventData), "AddSpawnedNetworkObjects")]
         public static void AddSpawnedNetworkObjects(SceneEventData __instance)
         {
-            if (Plugin.General_DestroyOpenedGift.Value)
+            if (Plugin.General_FixGiftBox.Value)
             {
                 if (__instance?.m_NetworkObjectsSync == null) return;
                 for (int i = __instance.m_NetworkObjectsSync.Count - 1; i >= 0; i--)

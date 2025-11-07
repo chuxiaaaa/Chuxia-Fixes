@@ -26,7 +26,7 @@ public class Plugin : BaseUnityPlugin
 
     public static ConfigEntry<bool> General_FixDeathBoxes { get; set; } = null!;
 
-    public static ConfigEntry<bool> General_DestroyOpenedGift { get; set; } = null!;
+    public static ConfigEntry<bool> General_FixGiftBox { get; set; } = null!;
 
 
     public static ConfigEntry<bool> General_FixNetworkObject { get; set; } = null!;
@@ -38,7 +38,7 @@ public class Plugin : BaseUnityPlugin
         General_DisableNetworkAnalyzer = Config.Bind("General", "DisableNetworkAnalyzer", true, "Disable the built-in network analyzer that cause performance issues.");
         General_FixNetworkObject = Config.Bind("General", "FixNetworkObject", true, "Fixed the issue where NetworkObject's cached parent was not set correctly.");
         General_FixDeathBoxes = Config.Bind("General", "FixDeathBoxes", true, "Fixed the issue where names and avatars were displayed incorrectly in spectator mode.");
-        General_DestroyOpenedGift = Config.Bind("General", "DestroyOpenedGift", true, "Completely destroy the has been used invisible gift boxes before players join the lobby.");
+        General_FixGiftBox = Config.Bind("General", "FixGiftBox", true, "Fixed the bug with the gift box in late joining");
         FixPlayerName_Enable = Config.Bind("FixPlayerName", "Enable", true, "Fixed incorrect or unknown player names.");
         FixPlayerName_WorkInterval = Config.Bind("FixPlayerName", "WorkInterval", 30f, "Interval (in seconds) between each attempt to fix player names.");
         Harmony.CreateAndPatchAll(typeof(FixPlayerName_Patches));
