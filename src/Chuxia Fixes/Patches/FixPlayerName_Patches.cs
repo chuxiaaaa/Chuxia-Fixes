@@ -29,25 +29,35 @@ namespace Patches
         [HarmonyWrapSafe]
         public static class UpdateMapTargetPostfixPatch
         {
+            static bool Prepare()
+            {
+                return Plugin.FixPlayerName_Enable.Value;
+            }
+
             static MethodBase TargetMethod()
             {
                 var stateMachineType = AccessTools.Inner(typeof(ManualCameraRenderer), "<updateMapTarget>d__71");
                 return AccessTools.Method(stateMachineType, "MoveNext");
             }
 
+            private static ManualCameraRenderer manualCamera = null;
+
             [HarmonyPostfix]
             public static void Postfix(object __instance, ref bool __result)
             {
                 if (!__result)
                 {
-                    var thisField = AccessTools.Field(__instance.GetType(), "<>4__this");
-                    var instance = thisField.GetValue(__instance) as ManualCameraRenderer;
-                    if (instance != null && instance.targetedPlayer != null)
+                    if (manualCamera == null)
                     {
-                        if (StartOfRound.Instance.mapScreenPlayerName.text != instance.targetedPlayer.playerUsername)
+                        var thisField = AccessTools.Field(__instance.GetType(), "<>4__this");
+                        manualCamera = thisField.GetValue(__instance) as ManualCameraRenderer;
+                    }
+                    if (manualCamera != null && manualCamera.targetedPlayer != null)
+                    {
+                        if (StartOfRound.Instance.mapScreenPlayerName.text != manualCamera.targetedPlayer.playerUsername)
                         {
-                            Plugin.Log.LogInfo($"[FixPlayerName] ManualCameraRenderer.updateMapTarget -> {instance.targetedPlayer.playerUsername}|{instance.targetedPlayer.playerSteamId}");
-                            StartOfRound.Instance.mapScreenPlayerName.text = instance.targetedPlayer.playerUsername;
+                            Plugin.Log.LogInfo($"[FixPlayerName] ManualCameraRenderer.updateMapTarget -> {manualCamera.targetedPlayer.playerUsername}|{manualCamera.targetedPlayer.playerSteamId}");
+                            StartOfRound.Instance.mapScreenPlayerName.text = manualCamera.targetedPlayer.playerUsername;
                         }
                     }
                 }

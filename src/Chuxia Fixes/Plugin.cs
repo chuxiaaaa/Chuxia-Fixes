@@ -42,6 +42,7 @@ public class Plugin : BaseUnityPlugin
         FixPlayerName_Enable = Config.Bind("FixPlayerName", "Enable", true, "Fixed incorrect or unknown player names.");
         FixPlayerName_WorkInterval = Config.Bind("FixPlayerName", "WorkInterval", 30f, "Interval (in seconds) between each attempt to fix player names.");
         Harmony.CreateAndPatchAll(typeof(FixPlayerName_Patches));
+        Harmony.CreateAndPatchAll(typeof(FixPlayerName_Patches.UpdateMapTargetPostfixPatch));
         Harmony.CreateAndPatchAll(typeof(General_Patches));
         if (General_DisableNetworkAnalyzer.Value)
         {
