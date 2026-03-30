@@ -36,7 +36,7 @@ namespace Patches
 
             static MethodBase TargetMethod()
             {
-                var stateMachineType = AccessTools.Inner(typeof(ManualCameraRenderer), "<updateMapTarget>d__71");
+                var stateMachineType = AccessTools.Inner(typeof(ManualCameraRenderer), "<updateMapTarget>d__74");
                 return AccessTools.Method(stateMachineType, "MoveNext");
             }
 
@@ -56,7 +56,7 @@ namespace Patches
                     {
                         if (StartOfRound.Instance.mapScreenPlayerName.text != manualCamera.targetedPlayer.playerUsername)
                         {
-                            Plugin.Log.LogInfo($"[FixPlayerName] ManualCameraRenderer.updateMapTarget -> {manualCamera.targetedPlayer.playerUsername}|{manualCamera.targetedPlayer.playerSteamId}");
+                            //Plugin.Log.LogInfo($"[FixPlayerName] ManualCameraRenderer.updateMapTarget -> {manualCamera.targetedPlayer.playerUsername}|{manualCamera.targetedPlayer.playerSteamId}");
                             StartOfRound.Instance.mapScreenPlayerName.text = manualCamera.targetedPlayer.playerUsername;
                         }
                     }
@@ -64,11 +64,24 @@ namespace Patches
             }
         }
 
-      
+
+        [HarmonyPatch(typeof(QuickMenuManager), "OpenQuickMenu")]
+        [HarmonyPrefix]
+        public static void OpenQuickMenu(QuickMenuManager __instance)
+        {
+            if (!__instance.NonHostPlayerSlotsEnabled())
+            {
+                return;
+            }
+            //Plugin.Log.LogInfo("OpenQuickMenu");
+            PlayerName_Refresh();
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GameNetworkManager), "SteamMatchmaking_OnLobbyMemberJoined")]
         public static void SteamMatchmaking_OnLobbyMemberJoinedPostfix()
         {
+            //Plugin.Log.LogInfo("SteamMatchmaking_OnLobbyMemberJoined");
             PlayerName_Refresh();
         }
 
@@ -78,7 +91,7 @@ namespace Patches
             {
                 return false;
             }
-            if (GameNetworkManager.Instance.disableSteam || !StartOfRound.Instance.shipHasLanded)
+            if (GameNetworkManager.Instance.disableSteam)
             {
                 return false;
             }
@@ -95,9 +108,9 @@ namespace Patches
 
         public static void SendNewPlayerValuesClientRpc()
         {
+            //Plugin.Log.LogInfo("SendNewPlayerValuesClientRpc");
             PlayerName_Refresh();
         }
-
 
 
         [HarmonyPostfix]
@@ -105,6 +118,7 @@ namespace Patches
 
         public static void OnPlayerConnectedClientRpc()
         {
+            //Plugin.Log.LogInfo("OnPlayerConnectedClientRpc");
             PlayerName_Refresh();
         }
 
@@ -117,7 +131,6 @@ namespace Patches
             {
                 return;
             }
-            // 确保只有一个协程在运行
             StopFixCoroutine(__instance);
             _fixCoroutine = __instance.StartCoroutine(FixPlayerNamesRoutine());
         }
@@ -125,8 +138,8 @@ namespace Patches
 
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(GameNetworkManager), "Disconnect")]
-        public static void OnDisconnect()
+        [HarmonyPatch(typeof(StartOfRound), "OnLocalDisconnect")]
+        public static void OnLocalDisconnect()
         {
             StopFixCoroutine();
         }
@@ -168,8 +181,9 @@ namespace Patches
 
         private static IEnumerator RefreshPlayerNames()
         {
+            //Plugin.Log.LogInfo("RefreshPlayerNames");
             var instance = StartOfRound.Instance;
-            if (instance?.allPlayerScripts == null || instance.connectedPlayersAmount == 0)
+            if (instance?.allPlayerScripts == null)
                 yield break;
 
             var quickMenu = UnityEngine.Object.FindObjectOfType<QuickMenuManager>();
@@ -210,7 +224,7 @@ namespace Patches
                 if (steamName == "[unknown]")
                 {
                     bool requested = SteamFriends.RequestUserInformation((SteamId)player.playerSteamId, true);
-                    Plugin.Log.LogInfo($"[FixPlayerName] Requested user info for {player.playerSteamId}: {requested}");
+                    //Plugin.Log.LogInfo($"[FixPlayerName] Requested user info for {player.playerSteamId}: {requested}");
                     yield break; // 等待回调更新
                 }
 
@@ -250,7 +264,7 @@ namespace Patches
                     var player = players[i];
                     if (player.playerSteamId == friend.Id.Value)
                     {
-                        Plugin.Log.LogInfo($"[FixPlayerName] OnPersonaStateChange:{friend.Id}|{friend.Name}");
+                        //Plugin.Log.LogInfo($"[FixPlayerName] OnPersonaStateChange:{friend.Id}|{friend.Name}");
                         if (friend.Name != player.playerUsername || player.usernameBillboardText.text != friend.Name)
                         {
                             player.playerUsername = friend.Name;
