@@ -175,7 +175,6 @@ namespace Patches
                 yield return RefreshPlayerNames();
             }
 
-            // 清理
             StopFixCoroutine();
         }
 
@@ -196,7 +195,7 @@ namespace Patches
                 var player = players[i];
                 var slot = quickMenu.playerListSlots[i];
 
-                if (player.playerSteamId == 0)
+                if (player.playerSteamId == 0 || (!player.isPlayerControlled && !player.isPlayerDead))
                 {
                     // 隐藏空槽位
                     if (slot.slotContainer.activeSelf)
