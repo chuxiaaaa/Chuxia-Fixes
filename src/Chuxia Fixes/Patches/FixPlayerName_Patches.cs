@@ -23,7 +23,7 @@ namespace Patches
     {
         private static Coroutine? _fixCoroutine;
         private static bool _isRegistered;
-        private static readonly WaitForSeconds _workInterval = new WaitForSeconds(Plugin.FixPlayerName_WorkInterval.Value); // 可配置的间隔
+        private static readonly WaitForSeconds _workInterval = new WaitForSeconds(Plugin.FixPlayerName_WorkInterval.Value);
 
         [HarmonyPatch]
         [HarmonyWrapSafe]
@@ -50,13 +50,17 @@ namespace Patches
                     if (manualCamera == null)
                     {
                         var thisField = AccessTools.Field(__instance.GetType(), "<>4__this");
+                        if (thisField == null)
+                        {
+
+                            return;
+                        }
                         manualCamera = thisField.GetValue(__instance) as ManualCameraRenderer;
                     }
                     if (manualCamera != null && manualCamera.targetedPlayer != null)
                     {
                         if (StartOfRound.Instance.mapScreenPlayerName.text != manualCamera.targetedPlayer.playerUsername)
                         {
-                            //Plugin.Log.LogInfo($"[FixPlayerName] ManualCameraRenderer.updateMapTarget -> {manualCamera.targetedPlayer.playerUsername}|{manualCamera.targetedPlayer.playerSteamId}");
                             StartOfRound.Instance.mapScreenPlayerName.text = manualCamera.targetedPlayer.playerUsername;
                         }
                     }
@@ -66,14 +70,13 @@ namespace Patches
 
 
         [HarmonyPatch(typeof(QuickMenuManager), "OpenQuickMenu")]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         public static void OpenQuickMenu(QuickMenuManager __instance)
         {
             if (!__instance.NonHostPlayerSlotsEnabled())
             {
                 return;
             }
-            //Plugin.Log.LogInfo("OpenQuickMenu");
             PlayerName_Refresh();
         }
 
@@ -81,7 +84,6 @@ namespace Patches
         [HarmonyPatch(typeof(GameNetworkManager), "SteamMatchmaking_OnLobbyMemberJoined")]
         public static void SteamMatchmaking_OnLobbyMemberJoinedPostfix()
         {
-            //Plugin.Log.LogInfo("SteamMatchmaking_OnLobbyMemberJoined");
             PlayerName_Refresh();
         }
 
@@ -108,7 +110,6 @@ namespace Patches
 
         public static void SendNewPlayerValuesClientRpc()
         {
-            //Plugin.Log.LogInfo("SendNewPlayerValuesClientRpc");
             PlayerName_Refresh();
         }
 
@@ -118,7 +119,6 @@ namespace Patches
 
         public static void OnPlayerConnectedClientRpc()
         {
-            //Plugin.Log.LogInfo("OnPlayerConnectedClientRpc");
             PlayerName_Refresh();
         }
 
@@ -162,7 +162,6 @@ namespace Patches
 
         private static IEnumerator FixPlayerNamesRoutine()
         {
-            // 延迟注册事件处理器，避免重复注册
             if (!_isRegistered)
             {
                 SteamFriends.OnPersonaStateChange += OnPersonaStateChange;
@@ -180,11 +179,9 @@ namespace Patches
 
         private static IEnumerator RefreshPlayerNames()
         {
-            //Plugin.Log.LogInfo("RefreshPlayerNames");
             var instance = StartOfRound.Instance;
             if (instance?.allPlayerScripts == null)
                 yield break;
-
             var quickMenu = UnityEngine.Object.FindObjectOfType<QuickMenuManager>();
             if (quickMenu == null) yield break;
 
@@ -194,20 +191,17 @@ namespace Patches
             {
                 var player = players[i];
                 var slot = quickMenu.playerListSlots[i];
-
-                if (player.playerSteamId == 0 || (!player.isPlayerControlled && !player.isPlayerDead))
+                if (slot == null || slot.slotContainer == null)
+                    continue;
+                var container = slot.slotContainer;
+                if (!player.isPlayerControlled && !player.isPlayerDead)
                 {
-                    // 隐藏空槽位
-                    if (slot.slotContainer.activeSelf)
-                        slot.slotContainer.SetActive(false);
+                    if (container.activeSelf)
+                        container.SetActive(false);
                     continue;
                 }
-
-                // 确保槽位可见
-                if (!slot.slotContainer.activeSelf)
-                    slot.slotContainer.SetActive(true);
-
-                // 更新玩家名称
+                if (!container.activeSelf)
+                    container.SetActive(true);
                 yield return UpdatePlayerName(player, slot);
             }
         }
@@ -218,16 +212,12 @@ namespace Patches
             {
                 var friend = new Friend(player.playerSteamId);
                 string steamName = friend.Name;
-
-                // 处理未知名称
                 if (steamName == "[unknown]")
                 {
                     bool requested = SteamFriends.RequestUserInformation((SteamId)player.playerSteamId, true);
-                    //Plugin.Log.LogInfo($"[FixPlayerName] Requested user info for {player.playerSteamId}: {requested}");
-                    yield break; // 等待回调更新
+                    yield break;
                 }
 
-                // 只在名称实际变化时更新
                 if (player.playerUsername != steamName)
                 {
                     player.playerUsername = steamName;
@@ -252,7 +242,6 @@ namespace Patches
             {
                 var instance = StartOfRound.Instance;
                 if (instance?.allPlayerScripts == null) return;
-
                 var quickMenu = UnityEngine.Object.FindObjectOfType<QuickMenuManager>();
                 if (quickMenu == null) return;
 
@@ -261,9 +250,12 @@ namespace Patches
                 for (int i = 0; i < players.Length; i++)
                 {
                     var player = players[i];
+                    if (!player.isPlayerControlled && !player.isPlayerDead)
+                    {
+                        continue;
+                    }
                     if (player.playerSteamId == friend.Id.Value)
                     {
-                        //Plugin.Log.LogInfo($"[FixPlayerName] OnPersonaStateChange:{friend.Id}|{friend.Name}");
                         if (friend.Name != player.playerUsername || player.usernameBillboardText.text != friend.Name)
                         {
                             player.playerUsername = friend.Name;
@@ -271,7 +263,6 @@ namespace Patches
                         }
                         var slot = quickMenu.playerListSlots[i];
                         slot.usernameHeader.text = friend.Name;
-                        slot.playerSteamId = friend.Id.Value;
                         if (!slot.slotContainer.activeSelf)
                             slot.slotContainer.SetActive(true);
                         break;
